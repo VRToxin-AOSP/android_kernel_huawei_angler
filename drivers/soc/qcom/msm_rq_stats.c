@@ -203,68 +203,15 @@ static int system_suspend_handler(struct notifier_block *nb,
 static ssize_t hotplug_disable_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
-	return snprintf(buf, MAX_LONG_SIZE, "%d\n", rq_info.hotplug_disabled);
-}
-
-static ssize_t store_hotplug_enable(struct kobject *kobj,
-				     struct kobj_attribute *attr,
-				     const char *buf, size_t count)
-{
-	int ret;
-	unsigned int val;
-	unsigned long flags = 0;
-
-	spin_lock_irqsave(&rq_lock, flags);
-	ret = sscanf(buf, "%u", &val);
-	if (ret != 1 || val < 0 || val > 1)
-		return -EINVAL;
-
-	rq_info.hotplug_enabled = val;
-	if (rq_info.hotplug_enabled)
-		rq_info.hotplug_disabled = 0;
-	else
-		rq_info.hotplug_disabled = 1;
-
-	spin_unlock_irqrestore(&rq_lock, flags);
-
-	return count;
-}
-
-static ssize_t show_hotplug_enable(struct kobject *kobj,
-				    struct kobj_attribute *attr, char *buf)
-{
-	return snprintf(buf, MAX_LONG_SIZE, "%d\n", rq_info.hotplug_enabled);
+	unsigned int val = 0;
+	val = rq_info.hotplug_disabled;
+	return snprintf(buf, MAX_LONG_SIZE, "%d\n", val);
 }
 
 static struct kobj_attribute hotplug_disabled_attr = __ATTR_RO(hotplug_disable);
 
-static struct kobj_attribute hotplug_enabled_attr =
-	__ATTR(hotplug_enable, S_IWUSR | S_IRUSR, show_hotplug_enable,
-	       store_hotplug_enable);
-
-#ifdef CONFIG_BRICKED_HOTPLUG
-unsigned int get_rq_info(void)
-{
-	unsigned long flags = 0;
-        unsigned int rq = 0;
-
-        spin_lock_irqsave(&rq_lock, flags);
-
-        rq = rq_info.rq_avg;
-        rq_info.rq_avg = 0;
-
-        spin_unlock_irqrestore(&rq_lock, flags);
-
-        return rq;
-}
-EXPORT_SYMBOL(get_rq_info);
-#endif
-
 static void def_work_fn(struct work_struct *work)
 {
-	if (!rq_info.hotplug_enabled)
-		return;
-
 	/* Notify polling threads on change of value */
 	sysfs_notify(rq_info.kobj, NULL, "def_timer_ms");
 }

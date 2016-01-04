@@ -12,14 +12,14 @@ clear
 THREAD="-j$(grep -c ^processor /proc/cpuinfo)"
 KERNEL="Image.gz"
 DTBIMAGE="dtb"
-DEFCONFIG="benzo_defconfig"
+DEFCONFIG="saber_defconfig"
 KERNEL_DIR="${HOME}/kernel/saber"
 ANYKERNEL_DIR="${HOME}/kernel/AK-Angler-AnyKernel2"
 TOOLCHAIN_DIR="${HOME}/toolchain"
 
 # Kernel Details
-BASE_AK_VER="SaberCore64"
-VER=".fuckery.1.001"
+BASE_AK_VER="fuckery"
+VER=".test"
 AK_VER="$BASE_AK_VER$VER"
 
 # Vars
