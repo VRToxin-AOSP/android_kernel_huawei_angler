@@ -199,10 +199,6 @@ static int set_max_cpus(const char *buf, const struct kernel_param *kp)
 	unsigned int i, ntokens = 0;
 	const char *cp = buf;
 	int val;
-	int msm_perf = strcmp(current->comm, "perfd");
-
-	if (msm_perf == 0)
-		return -EINVAL;
 
 	if (!clusters_inited)
 		return -EINVAL;
@@ -254,9 +250,7 @@ static const struct kernel_param_ops param_ops_max_cpus = {
 	.get = get_max_cpus,
 };
 
-#ifdef CONFIG_MSM_PERFORMANCE_HOTPLUG_ON
 device_param_cb(max_cpus, &param_ops_max_cpus, NULL, 0644);
-#endif
 
 static int set_managed_cpus(const char *buf, const struct kernel_param *kp)
 {
@@ -340,17 +334,15 @@ static const struct kernel_param_ops param_ops_managed_online_cpus = {
 	.get = get_managed_online_cpus,
 };
 
-#ifdef CONFIG_MSM_PERFORMANCE_HOTPLUG_ON
 device_param_cb(managed_online_cpus, &param_ops_managed_online_cpus,
 							NULL, 0444);
-#endif
+
 /*
  * Userspace sends cpu#:min_freq_value to vote for min_freq_value as the new
  * scaling_min. To withdraw its vote it needs to enter cpu#:0
  */
 static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 {
-#if 0
 	int i, j, ntokens = 0;
 	unsigned int val, cpu;
 	const char *cp = buf;
@@ -358,10 +350,6 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 	struct cpufreq_policy policy;
 	cpumask_var_t limit_mask;
 	int ret;
-	int msm_perf = strcmp(current->comm, "perfd");
-
-	if (msm_perf == 0)
-		return ret;
 	const char *reset = "0:0 4:0";
 
 	if (touchboost == 0)
@@ -418,7 +406,6 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 			cpumask_clear_cpu(j, limit_mask);
 	}
 	put_online_cpus();
-#endif
 	return 0;
 }
 
@@ -446,7 +433,6 @@ module_param_cb(cpu_min_freq, &param_ops_cpu_min_freq, NULL, 0644);
  */
 static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 {
-#if 0
 	int i, j, ntokens = 0;
 	unsigned int val, cpu;
 	const char *cp = buf;
@@ -494,7 +480,6 @@ static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 			cpumask_clear_cpu(j, limit_mask);
 	}
 	put_online_cpus();
-#endif
 	return 0;
 }
 
@@ -1055,10 +1040,6 @@ static int set_workload_detect(const char *buf, const struct kernel_param *kp)
 	unsigned int val, i;
 	struct cluster *i_cl;
 	unsigned long flags;
-	int msm_perf = strcmp(current->comm, "perfd");
-
-       if (msm_perf == 0)
-               return -EINVAL;
 
 	if (!clusters_inited)
 		return -EINVAL;
