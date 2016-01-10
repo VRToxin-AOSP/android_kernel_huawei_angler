@@ -30,6 +30,8 @@
 #include <linux/state_notifier.h>
 #endif
 
+#include "../../kernel/sched/sched.h"
+
 struct cpu_sync {
 	struct delayed_work boost_rem;
 	int cpu;
@@ -40,6 +42,7 @@ struct cpu_sync {
 	unsigned int input_boost_min;
 	unsigned int task_load;
 	unsigned int input_boost_freq;
+	unsigned int nr_running;
 };
 
 static DEFINE_PER_CPU(struct cpu_sync, sync_info);
@@ -89,6 +92,8 @@ static u64 last_input_time;
 static unsigned int min_input_interval = 150;
 module_param(min_input_interval, uint, 0644);
 
+
+static unsigned int cnt_nr_running;
 
 static int set_input_boost_freq(const char *buf, const struct kernel_param *kp)
 {
@@ -178,8 +183,10 @@ static int boost_adjust_notify(struct notifier_block *nb, unsigned long val,
 	if (!b_min && !ib_min)
 		return NOTIFY_OK;
 
-	min = max(b_min, ib_min);
-	min = min(min, policy->max);
+		min = max(b_min, ib_min);
+
+		if (cpu == 4 && min > 0 && cnt_nr_running == 0)
+                        break;
 
 	pr_debug("CPU%u policy min before boost: %u kHz\n",
 		 cpu, policy->min);
@@ -216,7 +223,8 @@ static void update_policy_online(void)
 	get_online_cpus();
 	for_each_online_cpu(i) {
 		pr_debug("Updating policy for CPU%d\n", i);
-		cpufreq_update_policy(i);
+		if (i == 0 || i == 4)
+			cpufreq_update_policy(i);
 	}
 	put_online_cpus();
 }
@@ -232,6 +240,8 @@ static void do_input_boost_rem(struct work_struct *work)
 		i_sync_info = &per_cpu(sync_info, i);
 		i_sync_info->input_boost_min = 0;
 	}
+
+	cnt_nr_running = 0;
 
 	/* Update policies for all online CPUs */
 	update_policy_online();
@@ -396,6 +406,9 @@ static void do_input_boost(struct work_struct *work)
 	for_each_possible_cpu(i) {
 		i_sync_info = &per_cpu(sync_info, i);
 		i_sync_info->input_boost_min = i_sync_info->input_boost_freq;
+
+		if (i >= 4)
+			cnt_nr_running += cpu_rq(i)->nr_running;
 	}
 
 	/* Update policies for all online CPUs */
@@ -425,7 +438,8 @@ static void cpuboost_input_event(struct input_handle *handle,
 		return;
 
 	now = ktime_to_us(ktime_get());
-	min_interval = max(min_input_interval, input_boost_ms);
+	if (now - last_input_time < (input_boost_ms * USEC_PER_MSEC))
+		return;
 
 	if (now - last_input_time < min_interval * USEC_PER_MSEC)
 		return;
