@@ -33,9 +33,6 @@ module_param(enable_bluedroid_timer_ws, bool, 0644);
 
 #include "power.h"
 
-static bool enable_bluedroid_timer_ws = true;
-module_param(enable_bluedroid_timer_ws, bool, 0644);
-
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
  * if wakeup events are registered during or immediately before the transition.
