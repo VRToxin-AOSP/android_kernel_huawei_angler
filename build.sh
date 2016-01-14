@@ -19,7 +19,7 @@ TOOLCHAIN_DIR="${HOME}/toolchain"
 
 # Kernel Details
 BASE_AK_VER="fuckery"
-VER=".no.plug.2.8 "
+VER=".no.plug.2.85 "
 AK_VER="$BASE_AK_VER$VER"
 
 # Vars
