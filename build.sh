@@ -19,7 +19,7 @@ TOOLCHAIN_DIR="${HOME}/toolchain"
 
 # Kernel Details
 BASE_AK_VER="fuckery"
-VER=".no.plug.2.85-uber-6.0 "
+VER=".no.plug.2.87-uber-6.0 "
 AK_VER="$BASE_AK_VER$VER"
 
 # Vars
